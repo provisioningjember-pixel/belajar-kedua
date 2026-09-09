@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
   
-  <!-- CSS Internal -->
   <style>
     body {
       background-color: #f8f9fa;
@@ -57,8 +56,8 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
-            <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('dashboard')">Dashboard</a></li>
-            <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('kasir')">Transaksi / Kasir</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('dashboard')">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('kasir')">Transaksi / Kasir</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('barang')">Master Barang</a></li>
             <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('riwayat')">Riwayat Transaksi</a></li>
           </ul>
@@ -72,7 +71,7 @@
 
     <div class="container">
       <!-- TAB DASHBOARD -->
-      <div id="tab-dashboard" class="tab-content">
+      <div id="tab-dashboard" class="tab-content" style="display: none;">
         <div class="row g-3 mb-4">
           <div class="col-md-4">
             <div class="card bg-success text-white p-3 shadow-sm">
@@ -96,7 +95,7 @@
       </div>
 
       <!-- TAB KASIR -->
-      <div id="tab-kasir" class="tab-content" style="display: none;">
+      <div id="tab-kasir" class="tab-content">
         <div class="row">
           <div class="col-md-7">
             <div class="card p-3 shadow-sm mb-3">
@@ -239,7 +238,7 @@
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
-  <!-- JS Script Logic (Terhubung ke Firebase Anda) -->
+  <!-- JS Script Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -255,7 +254,6 @@
       appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -263,23 +261,37 @@
     let cart = [];
     let currentUser = null;
 
-    // AUTHENTICATION STATE
+    // FUNGSI GANTI TAB GLOBAL
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+      const targetTab = document.getElementById(`tab-${tabName}`);
+      if(targetTab) targetTab.style.display = 'block';
+
+      if(tabName === 'dashboard') loadDashboard();
+      if(tabName === 'barang') loadMasterBarang();
+      if(tabName === 'riwayat') loadRiwayat();
+    };
+
+    // MANAGEMENT STATUS AUTHENTICATION
     onAuthStateChanged(auth, (user) => {
-  if (user) {
-    currentUser = user;
-    document.getElementById('login-page').style.display = 'none';
-    document.getElementById('main-page').style.display = 'block';
-    document.getElementById('user-display-name').innerText = user.email;
-    
-    // Buka tab kasir/dashboard secara eksplisit
-    switchTab('kasir');
-  } else {
-    currentUser = null;
-    document.getElementById('login-page').style.display = 'flex';
-    document.getElementById('main-page').style.display = 'none';
-  }
-});
-    // Login
+      if (user) {
+        currentUser = user;
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('main-page').style.display = 'block';
+        document.getElementById('user-display-name').innerText = user.email;
+
+        // Buka Tab Kasir secara langsung
+        window.switchTab('kasir');
+      } else {
+        currentUser = null;
+        document.getElementById('login-page').style.display = 'flex';
+        document.getElementById('main-page').style.display = 'none';
+      }
+    });
+
+    // LOGIN
     document.getElementById('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value;
@@ -287,13 +299,13 @@
 
       try {
         await signInWithEmailAndPassword(auth, email, pass);
-        Swal.fire('Berhasil', 'Selamat Datang!', 'success');
+        // Tampilan akan berpindah otomatis melalui listener onAuthStateChanged
       } catch (err) {
         Swal.fire('Gagal Login', err.message, 'error');
       }
     });
 
-    // Register User
+    // REGISTER
     document.getElementById('form-register').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('reg-email').value;
@@ -308,18 +320,8 @@
       }
     });
 
-    // Logout
+    // LOGOUT
     document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
-
-    // TAB SWITCHER
-    window.switchTab = function(tabName) {
-      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-      document.getElementById(`tab-${tabName}`).style.display = 'block';
-
-      if(tabName === 'dashboard') loadDashboard();
-      if(tabName === 'barang') loadMasterBarang();
-      if(tabName === 'riwayat') loadRiwayat();
-    };
 
     // MASTER BARANG
     document.getElementById('form-tambah-barang').addEventListener('submit', async (e) => {
@@ -349,24 +351,28 @@
     });
 
     async function loadMasterBarang() {
-      const querySnapshot = await getDocs(collection(db, "kasir_barang"));
-      let html = '';
-      querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
-        html += `
-          <tr>
-            <td><code>${data.kode}</code></td>
-            <td>${data.nama}</td>
-            <td>Rp ${data.hargaBeli.toLocaleString()}</td>
-            <td>Rp ${data.hargaJual.toLocaleString()}</td>
-            <td><span class="badge ${data.stok <= 5 ? 'bg-danger' : 'bg-success'}">${data.stok}</span></td>
-            <td>
-              <button class="btn btn-sm btn-danger" onclick="hapusBarang('${docSnap.id}')"><i class="fas fa-trash"></i></button>
-            </td>
-          </tr>
-        `;
-      });
-      document.getElementById('barang-body').innerHTML = html;
+      try {
+        const querySnapshot = await getDocs(collection(db, "kasir_barang"));
+        let html = '';
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          html += `
+            <tr>
+              <td><code>${data.kode}</code></td>
+              <td>${data.nama}</td>
+              <td>Rp ${data.hargaBeli ? data.hargaBeli.toLocaleString() : 0}</td>
+              <td>Rp ${data.hargaJual ? data.hargaJual.toLocaleString() : 0}</td>
+              <td><span class="badge ${data.stok <= 5 ? 'bg-danger' : 'bg-success'}">${data.stok}</span></td>
+              <td>
+                <button class="btn btn-sm btn-danger" onclick="hapusBarang('${docSnap.id}')"><i class="fas fa-trash"></i></button>
+              </td>
+            </tr>
+          `;
+        });
+        document.getElementById('barang-body').innerHTML = html;
+      } catch (err) {
+        console.error("Gagal memuat barang:", err);
+      }
     }
 
     window.hapusBarang = async function(id) {
@@ -376,25 +382,30 @@
       }
     };
 
-    // KASIR & KERANJANG
+    // TRANSAKSI & KERANJANG
     document.getElementById('scan-barang').addEventListener('keypress', async (e) => {
       if (e.key === 'Enter') {
         const queryVal = e.target.value.trim().toLowerCase();
-        const querySnapshot = await getDocs(collection(db, "kasir_barang"));
-        
-        let found = null;
-        querySnapshot.forEach(docSnap => {
-          const d = docSnap.data();
-          if(d.kode.toLowerCase() === queryVal || d.nama.toLowerCase().includes(queryVal)) {
-            found = { id: docSnap.id, ...d };
-          }
-        });
+        if(!queryVal) return;
 
-        if (found) {
-          addToCart(found);
-          e.target.value = '';
-        } else {
-          Swal.fire('Barang Tidak Ditemukan', '', 'warning');
+        try {
+          const querySnapshot = await getDocs(collection(db, "kasir_barang"));
+          let found = null;
+          querySnapshot.forEach(docSnap => {
+            const d = docSnap.data();
+            if(d.kode.toLowerCase() === queryVal || d.nama.toLowerCase().includes(queryVal)) {
+              found = { id: docSnap.id, ...d };
+            }
+          });
+
+          if (found) {
+            addToCart(found);
+            e.target.value = '';
+          } else {
+            Swal.fire('Barang Tidak Ditemukan', '', 'warning');
+          }
+        } catch (err) {
+          Swal.fire('Error Pencarian', err.message, 'error');
         }
       }
     });
@@ -488,47 +499,55 @@
 
     // LOAD RIWAYAT
     async function loadRiwayat() {
-      const q = query(collection(db, "kasir_transaksi"), orderBy("createdAt", "desc"));
-      const querySnapshot = await getDocs(q);
-      let html = '';
-      querySnapshot.forEach((docSnap) => {
-        const d = docSnap.data();
-        const tgl = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleString() : '-';
-        html += `
-          <tr>
-            <td>${tgl}</td>
-            <td><code>${docSnap.id}</code></td>
-            <td>Rp ${d.total.toLocaleString()}</td>
-            <td>Rp ${d.bayar.toLocaleString()}</td>
-            <td>${d.user}</td>
-          </tr>
-        `;
-      });
-      document.getElementById('riwayat-body').innerHTML = html;
+      try {
+        const q = query(collection(db, "kasir_transaksi"), orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        let html = '';
+        querySnapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          const tgl = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleString() : '-';
+          html += `
+            <tr>
+              <td>${tgl}</td>
+              <td><code>${docSnap.id}</code></td>
+              <td>Rp ${d.total ? d.total.toLocaleString() : 0}</td>
+              <td>Rp ${d.bayar ? d.bayar.toLocaleString() : 0}</td>
+              <td>${d.user}</td>
+            </tr>
+          `;
+        });
+        document.getElementById('riwayat-body').innerHTML = html;
+      } catch (err) {
+        console.error("Gagal memuat riwayat:", err);
+      }
     }
 
     // LOAD DASHBOARD
     async function loadDashboard() {
-      const querySnapshot = await getDocs(collection(db, "kasir_transaksi"));
-      let totalOmset = 0;
-      let totalLaba = 0;
-      let countTrans = 0;
+      try {
+        const querySnapshot = await getDocs(collection(db, "kasir_transaksi"));
+        let totalOmset = 0;
+        let totalLaba = 0;
+        let countTrans = 0;
 
-      querySnapshot.forEach((docSnap) => {
-        const d = docSnap.data();
-        totalOmset += d.total;
-        countTrans++;
-        if(d.items) {
-          d.items.forEach(item => {
-            const labaPerItem = (item.hargaJual - item.hargaBeli) * item.qty;
-            totalLaba += labaPerItem;
-          });
-        }
-      });
+        querySnapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          totalOmset += d.total || 0;
+          countTrans++;
+          if(d.items) {
+            d.items.forEach(item => {
+              const labaPerItem = ((item.hargaJual || 0) - (item.hargaBeli || 0)) * item.qty;
+              totalLaba += labaPerItem;
+            });
+          }
+        });
 
-      document.getElementById('dash-omset').innerText = `Rp ${totalOmset.toLocaleString()}`;
-      document.getElementById('dash-laba').innerText = `Rp ${totalLaba.toLocaleString()}`;
-      document.getElementById('dash-transaksi').innerText = countTrans;
+        document.getElementById('dash-omset').innerText = `Rp ${totalOmset.toLocaleString()}`;
+        document.getElementById('dash-laba').innerText = `Rp ${totalLaba.toLocaleString()}`;
+        document.getElementById('dash-transaksi').innerText = countTrans;
+      } catch (err) {
+        console.error("Gagal memuat dashboard:", err);
+      }
     }
   </script>
 </body>
