@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toko Online - Katalog & Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .page-section { display: none; }
+        .page-active { display: block; }
+    </style>
+</head>
+<body class="bg-light">
+
+    <!-- Navbar Navigasi -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">🛒 Toko Serba Ada</a>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-light btn-sm" onclick="showPage('pageKatalog')">Katalog Pengunjung</button>
+                <button class="btn btn-warning btn-sm fw-semibold" onclick="showPage('pageAdmin')">Halaman Admin</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container pb-5">
+        <!-- Tempat Notifikasi -->
+        <div id="alertBox"></div>
+
+        <!-- ================= 1. HALAMAN PENGUNJUNG (KATALOG BARANG) ================= -->
+        <div id="pageKatalog" class="page-section page-active">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Daftar Produk Tersedia</h4>
+                <span class="badge bg-primary">Pengunjung</span>
+            </div>
+            
+            <div id="katalogList" class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col-12 text-center text-muted">Memuat barang...</div>
+            </div>
+        </div>
+
+        <!-- ================= 2. HALAMAN ADMIN (KELOLA BARANG) ================= -->
+        <div id="pageAdmin" class="page-section">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4>Panel Kelola Barang</h4>
+                <span class="badge bg-warning text-dark">Admin Mode</span>
+            </div>
+
+            <!-- Form Tambah Barang -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0" id="formTitle">Tambah Barang Baru</h5>
+                </div>
+                <div class="card-body">
+                    <form id="productForm">
+                        <input type="hidden" id="productId"> <!-- Untuk mode Edit -->
+                        <div class="mb-3">
+                            <label class="form-label">Nama Barang</label>
+                            <input type="text" id="namaBarang" class="form-control" placeholder="Contoh: Kopi Bubuk 250g" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Harga (Rp)</label>
+                                <input type="number" id="hargaBarang" class="form-control" placeholder="15000" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Jumlah Stok</label>
+                                <input type="number" id="stokBarang" class="form-control" placeholder="50" required>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" id="btnSimpan" class="btn btn-success flex-grow-1">Simpan Barang</button>
+                            <button type="button" id="btnBatal" class="btn btn-secondary d-none" onclick="resetForm()">Batal Edit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tabel Data Barang -->
+            <div class="card shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped mb-0">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Nama Barang</th>
+                                    <th>Harga</th>
+                                    <th>Stok</th>
+                                    <th class="text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr><td colspan="4" class="text-center text-muted">Memuat data tabel...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Version 10) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Konfigurasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
+            authDomain: "forminput-9c324.firebaseapp.com",
+            projectId: "forminput-9c324",
+            storageBucket: "forminput-9c324.firebasestorage.app",
+            messagingSenderId: "105974451173",
+            appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const productsCollection = collection(db, "products");
+
+        // Helper Notifikasi
+        function showAlert(message, type) {
+            const alertBox = document.getElementById("alertBox");
+            alertBox.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // Navigasi Tab
+        window.showPage = function(pageId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('page-active'));
+            document.getElementById(pageId).classList.add('page-active');
+            document.getElementById("alertBox").innerHTML = "";
+        }
+
+        // Format Rupiah
+        function formatRupiah(angka) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+        }
+
+        // 1. TAMBAH / UPDATE BARANG
+        document.getElementById("productForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const id = document.getElementById("productId").value;
+            const nama = document.getElementById("namaBarang").value;
+            const harga = Number(document.getElementById("hargaBarang").value);
+            const stok = Number(document.getElementById("stokBarang").value);
+            const btn = document.getElementById("btnSimpan");
+
+            btn.disabled = true;
+            btn.innerText = "Proses Menyimpan...";
+
+            try {
+                if (id) {
+                    // Update Barang
+                    const docRef = doc(db, "products", id);
+                    await updateDoc(docRef, {
+                        nama_barang: nama,
+                        harga: harga,
+                        stok: stok
+                    });
+                    showAlert("Barang berhasil diperbarui!", "success");
+                } else {
+                    // Tambah Barang Baru
+                    await addDoc(productsCollection, {
+                        nama_barang: nama,
+                        harga: harga,
+                        stok: stok,
+                        created_at: new Date()
+                    });
+                    showAlert("Barang baru berhasil ditambahkan!", "success");
+                }
+                resetForm();
+            } catch (error) {
+                showAlert(`Gagal menyimpan data: ${error.message}`, "danger");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Simpan Barang";
+            }
+        });
+
+        // 2. TAMPILKAN DATA REALTIME (Katalog & Admin Table)
+        onSnapshot(productsCollection, (snapshot) => {
+            const katalogList = document.getElementById("katalogList");
+            const adminTableBody = document.getElementById("adminTableBody");
+
+            katalogList.innerHTML = "";
+            adminTableBody.innerHTML = "";
+
+            if (snapshot.empty) {
+                katalogList.innerHTML = `<div class="col-12 text-center text-muted">Belum ada barang jualan.</div>`;
+                adminTableBody.innerHTML = `<tr><td colspan="4" class="text-center text-muted">Belum ada barang di database.</td></tr>`;
+                return;
+            }
+
+            snapshot.forEach((docSnapshot) => {
+                const id = docSnapshot.id;
+                const data = docSnapshot.data();
+
+                // A. Render Tampilan Katalog (Pengunjung)
+                const card = `
+                    <div class="col">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold">${data.nama_barang}</h5>
+                                <h6 class="card-subtitle mb-2 text-primary fw-bold">${formatRupiah(data.harga)}</h6>
+                                <p class="card-text mb-0">
+                                    <small class="text-muted">Sisa Stok: </small>
+                                    <span class="badge ${data.stok > 0 ? 'bg-success' : 'bg-danger'}">${data.stok} unit</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                katalogList.innerHTML += card;
+
+                // B. Render Tampilan Tabel (Admin)
+                const row = `
+                    <tr>
+                        <td class="fw-semibold">${data.nama_barang}</td>
+                        <td>${formatRupiah(data.harga)}</td>
+                        <td><span class="badge ${data.stok > 0 ? 'bg-success' : 'bg-danger'}">${data.stok}</span></td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-warning me-1" onclick="editProduct('${id}', '${data.nama_barang}', ${data.harga}, ${data.stok})">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteProduct('${id}')">Hapus</button>
+                        </td>
+                    </tr>
+                `;
+                adminTableBody.innerHTML += row;
+            });
+        });
+
+        // 3. EDIT BARANG (Pindahkan Data ke Form)
+        window.editProduct = function(id, nama, harga, stok) {
+            document.getElementById("productId").value = id;
+            document.getElementById("namaBarang").value = nama;
+            document.getElementById("hargaBarang").value = harga;
+            document.getElementById("stokBarang").value = stok;
+
+            document.getElementById("formTitle").innerText = "Edit Data Barang";
+            document.getElementById("btnSimpan").innerText = "Update Barang";
+            document.getElementById("btnBatal").classList.remove("d-none");
+            
+            // Scroll otomatis ke form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 4. RESET FORM EDIT
+        window.resetForm = function() {
+            document.getElementById("productForm").reset();
+            document.getElementById("productId").value = "";
+            document.getElementById("formTitle").innerText = "Tambah Barang Baru";
+            document.getElementById("btnSimpan").innerText = "Simpan Barang";
+            document.getElementById("btnBatal").classList.add("d-none");
+        }
+
+        // 5. HAPUS BARANG
+        window.deleteProduct = async function(id) {
+            if (confirm("Apakah kamu yakin ingin menghapus barang ini?")) {
+                try {
+                    await deleteDoc(doc(db, "products", id));
+                    showAlert("Barang berhasil dihapus!", "success");
+                } catch (error) {
+                    showAlert(`Gagal menghapus: ${error.message}`, "danger");
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
