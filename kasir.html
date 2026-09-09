@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Kasir Web - Firebase</title>
+  
+  <!-- CSS Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+  
+  <!-- CSS Internal -->
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card {
+      border-radius: 10px;
+      border: none;
+    }
+    .table input[type="number"] {
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PAGE LOGIN -->
+  <div id="login-page" class="container d-flex justify-content-center align-items-center vh-100">
+    <div class="card shadow p-4" style="max-width: 400px; width: 100%;">
+      <h3 class="text-center mb-3 fw-bold text-primary"><i class="fas fa-cash-register me-2"></i>Login Kasir</h3>
+      <form id="form-login">
+        <div class="mb-3">
+          <label class="form-label">Email / User ID</label>
+          <input type="email" id="login-email" class="form-control" placeholder="nama@email.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-control" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 mb-2">Masuk</button>
+      </form>
+      <button class="btn btn-outline-secondary w-100" data-bs-toggle="modal" data-bs-target="#modalRegister">Daftar User Baru</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP PAGE -->
+  <div id="main-page" style="display: none;">
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4 shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#"><i class="fas fa-store me-2"></i>POS Kasir Web</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item"><a class="nav-link active" href="#" onclick="switchTab('dashboard')">Dashboard</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('kasir')">Transaksi / Kasir</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('barang')">Master Barang</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="switchTab('riwayat')">Riwayat Transaksi</a></li>
+          </ul>
+          <div class="d-flex align-items-center text-white">
+            <span class="me-3" id="user-display-name">User</span>
+            <button class="btn btn-danger btn-sm" id="btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <!-- TAB DASHBOARD -->
+      <div id="tab-dashboard" class="tab-content">
+        <div class="row g-3 mb-4">
+          <div class="col-md-4">
+            <div class="card bg-success text-white p-3 shadow-sm">
+              <h5>Total Omset</h5>
+              <h2 id="dash-omset">Rp 0</h2>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-primary text-white p-3 shadow-sm">
+              <h5>Total Laba</h5>
+              <h2 id="dash-laba">Rp 0</h2>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card bg-warning text-dark p-3 shadow-sm">
+              <h5>Jumlah Transaksi</h5>
+              <h2 id="dash-transaksi">0</h2>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB KASIR -->
+      <div id="tab-kasir" class="tab-content" style="display: none;">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="card p-3 shadow-sm mb-3">
+              <h5>Cari / Scan Barang</h5>
+              <input type="text" id="scan-barang" class="form-control" placeholder="Ketik Kode atau Nama Barang lalu Enter...">
+            </div>
+            <div class="card p-3 shadow-sm">
+              <h5>Keranjang Belanja</h5>
+              <table class="table table-striped align-middle" id="table-cart">
+                <thead>
+                  <tr>
+                    <th>Barang</th>
+                    <th>Harga</th>
+                    <th style="width: 120px;">Qty</th>
+                    <th>Subtotal</th>
+                    <th>Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="cart-body"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-5">
+            <div class="card p-3 shadow-sm">
+              <h5>Pembayaran</h5>
+              <hr>
+              <div class="d-flex justify-content-between h4 fw-bold">
+                <span>Total:</span>
+                <span id="cart-total" class="text-primary">Rp 0</span>
+              </div>
+              <div class="mb-3 mt-3">
+                <label class="form-label">Uang Bayar</label>
+                <input type="number" id="uang-bayar" class="form-control form-control-lg" placeholder="0">
+              </div>
+              <div class="d-flex justify-content-between h5 fw-bold text-secondary mb-3">
+                <span>Kembalian:</span>
+                <span id="uang-kembalian">Rp 0</span>
+              </div>
+              <button class="btn btn-success btn-lg w-100" id="btn-proses-transaksi"><i class="fas fa-check-circle me-2"></i>Selesaikan Transaksi</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB MASTER BARANG -->
+      <div id="tab-barang" class="tab-content" style="display: none;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4>Master Data Barang</h4>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambahBarang"><i class="fas fa-plus me-1"></i>Tambah Barang</button>
+        </div>
+        <div class="card p-3 shadow-sm">
+          <table class="table table-hover align-middle" id="table-barang">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama Barang</th>
+                <th>Harga Beli</th>
+                <th>Harga Jual</th>
+                <th>Stok</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="barang-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB RIWAYAT -->
+      <div id="tab-riwayat" class="tab-content" style="display: none;">
+        <h4>Riwayat Transaksi</h4>
+        <div class="card p-3 shadow-sm">
+          <table class="table table-striped align-middle" id="table-riwayat">
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>ID Transaksi</th>
+                <th>Total Belanja</th>
+                <th>Uang Bayar</th>
+                <th>Kasir</th>
+              </tr>
+            </thead>
+            <tbody id="riwayat-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL REGISTER USER -->
+  <div class="modal fade" id="modalRegister" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Registrasi User Kasir</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-register">
+            <div class="mb-3">
+              <label class="form-label">Email</label>
+              <input type="email" id="reg-email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Password</label>
+              <input type="password" id="reg-pass" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Daftar Sekarang</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TAMBAH BARANG -->
+  <div class="modal fade" id="modalTambahBarang" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Tambah Barang Baru</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="form-tambah-barang">
+            <div class="mb-2"><label>Kode/ID Barang</label><input type="text" id="b-id" class="form-control" required></div>
+            <div class="mb-2"><label>Nama Barang</label><input type="text" id="b-nama" class="form-control" required></div>
+            <div class="mb-2"><label>Harga Beli</label><input type="number" id="b-beli" class="form-control" required></div>
+            <div class="mb-2"><label>Harga Jual</label><input type="number" id="b-jual" class="form-control" required></div>
+            <div class="mb-2"><label>Stok Awal</label><input type="number" id="b-stok" class="form-control" required></div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Simpan Barang</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+  <!-- JS Script Logic (Terhubung ke Firebase Anda) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // Konfigurasi Firebase Anda
+    const firebaseConfig = {
+      apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
+      authDomain: "forminput-9c324.firebaseapp.com",
+      projectId: "forminput-9c324",
+      storageBucket: "forminput-9c324.firebasestorage.app",
+      messagingSenderId: "105974451173",
+      appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let cart = [];
+    let currentUser = null;
+
+    // AUTHENTICATION STATE
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('login-page').style.display = 'none';
+        document.getElementById('main-page').style.display = 'block';
+        document.getElementById('user-display-name').innerText = user.email;
+        loadMasterBarang();
+        loadDashboard();
+      } else {
+        currentUser = null;
+        document.getElementById('login-page').style.display = 'flex';
+        document.getElementById('main-page').style.display = 'none';
+      }
+    });
+
+    // Login
+    document.getElementById('form-login').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+        Swal.fire('Berhasil', 'Selamat Datang!', 'success');
+      } catch (err) {
+        Swal.fire('Gagal Login', err.message, 'error');
+      }
+    });
+
+    // Register User
+    document.getElementById('form-register').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-pass').value;
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, pass);
+        Swal.fire('Berhasil', 'User berhasil dibuat!', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalRegister')).hide();
+      } catch (err) {
+        Swal.fire('Gagal Pendaftaran', err.message, 'error');
+      }
+    });
+
+    // Logout
+    document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+    // TAB SWITCHER
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+      document.getElementById(`tab-${tabName}`).style.display = 'block';
+
+      if(tabName === 'dashboard') loadDashboard();
+      if(tabName === 'barang') loadMasterBarang();
+      if(tabName === 'riwayat') loadRiwayat();
+    };
+
+    // MASTER BARANG
+    document.getElementById('form-tambah-barang').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const idBarang = document.getElementById('b-id').value;
+      const nama = document.getElementById('b-nama').value;
+      const hargaBeli = Number(document.getElementById('b-beli').value);
+      const hargaJual = Number(document.getElementById('b-jual').value);
+      const stok = Number(document.getElementById('b-stok').value);
+
+      try {
+        await addDoc(collection(db, "kasir_barang"), {
+          kode: idBarang,
+          nama: nama,
+          hargaBeli: hargaBeli,
+          hargaJual: hargaJual,
+          stok: stok,
+          createdAt: serverTimestamp()
+        });
+        Swal.fire('Berhasil', 'Barang disimpan', 'success');
+        bootstrap.Modal.getInstance(document.getElementById('modalTambahBarang')).hide();
+        document.getElementById('form-tambah-barang').reset();
+        loadMasterBarang();
+      } catch(err) {
+        Swal.fire('Error', err.message, 'error');
+      }
+    });
+
+    async function loadMasterBarang() {
+      const querySnapshot = await getDocs(collection(db, "kasir_barang"));
+      let html = '';
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        html += `
+          <tr>
+            <td><code>${data.kode}</code></td>
+            <td>${data.nama}</td>
+            <td>Rp ${data.hargaBeli.toLocaleString()}</td>
+            <td>Rp ${data.hargaJual.toLocaleString()}</td>
+            <td><span class="badge ${data.stok <= 5 ? 'bg-danger' : 'bg-success'}">${data.stok}</span></td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="hapusBarang('${docSnap.id}')"><i class="fas fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      });
+      document.getElementById('barang-body').innerHTML = html;
+    }
+
+    window.hapusBarang = async function(id) {
+      if(confirm("Hapus barang ini?")) {
+        await deleteDoc(doc(db, "kasir_barang", id));
+        loadMasterBarang();
+      }
+    };
+
+    // KASIR & KERANJANG
+    document.getElementById('scan-barang').addEventListener('keypress', async (e) => {
+      if (e.key === 'Enter') {
+        const queryVal = e.target.value.trim().toLowerCase();
+        const querySnapshot = await getDocs(collection(db, "kasir_barang"));
+        
+        let found = null;
+        querySnapshot.forEach(docSnap => {
+          const d = docSnap.data();
+          if(d.kode.toLowerCase() === queryVal || d.nama.toLowerCase().includes(queryVal)) {
+            found = { id: docSnap.id, ...d };
+          }
+        });
+
+        if (found) {
+          addToCart(found);
+          e.target.value = '';
+        } else {
+          Swal.fire('Barang Tidak Ditemukan', '', 'warning');
+        }
+      }
+    });
+
+    function addToCart(item) {
+      const existing = cart.find(i => i.id === item.id);
+      if(existing) {
+        if(existing.qty + 1 > item.stok) return Swal.fire('Stok Tidak Cukup', '', 'warning');
+        existing.qty++;
+      } else {
+        cart.push({ ...item, qty: 1 });
+      }
+      renderCart();
+    }
+
+    function renderCart() {
+      let html = '';
+      let total = 0;
+      cart.forEach((item, index) => {
+        const subtotal = item.hargaJual * item.qty;
+        total += subtotal;
+        html += `
+          <tr>
+            <td>${item.nama}</td>
+            <td>Rp ${item.hargaJual.toLocaleString()}</td>
+            <td>
+              <input type="number" class="form-control form-control-sm" value="${item.qty}" min="1" onchange="updateQty(${index}, this.value)">
+            </td>
+            <td>Rp ${subtotal.toLocaleString()}</td>
+            <td><button class="btn btn-sm btn-outline-danger" onclick="removeCartItem(${index})">&times;</button></td>
+          </tr>
+        `;
+      });
+      document.getElementById('cart-body').innerHTML = html;
+      document.getElementById('cart-total').innerText = `Rp ${total.toLocaleString()}`;
+      hitungKembalian();
+    }
+
+    window.updateQty = function(index, val) {
+      cart[index].qty = Number(val);
+      renderCart();
+    };
+
+    window.removeCartItem = function(index) {
+      cart.splice(index, 1);
+      renderCart();
+    };
+
+    document.getElementById('uang-bayar').addEventListener('input', hitungKembalian);
+
+    function hitungKembalian() {
+      const total = cart.reduce((sum, item) => sum + (item.hargaJual * item.qty), 0);
+      const bayar = Number(document.getElementById('uang-bayar').value) || 0;
+      const kembalian = bayar - total;
+      document.getElementById('uang-kembalian').innerText = `Rp ${kembalian >= 0 ? kembalian.toLocaleString() : 0}`;
+    }
+
+    // SUBMIT TRANSAKSI
+    document.getElementById('btn-proses-transaksi').addEventListener('click', async () => {
+      const total = cart.reduce((sum, item) => sum + (item.hargaJual * item.qty), 0);
+      const bayar = Number(document.getElementById('uang-bayar').value) || 0;
+
+      if(cart.length === 0) return Swal.fire('Keranjang Kosong!', '', 'warning');
+      if(bayar < total) return Swal.fire('Uang Bayar Kurang!', '', 'warning');
+
+      try {
+        await addDoc(collection(db, "kasir_transaksi"), {
+          items: cart,
+          total: total,
+          bayar: bayar,
+          kembali: bayar - total,
+          user: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+
+        for (const item of cart) {
+          const barangRef = doc(db, "kasir_barang", item.id);
+          await updateDoc(barangRef, {
+            stok: item.stok - item.qty
+          });
+        }
+
+        Swal.fire('Transaksi Berhasil!', '', 'success');
+        cart = [];
+        document.getElementById('uang-bayar').value = '';
+        renderCart();
+      } catch(err) {
+        Swal.fire('Gagal Transaksi', err.message, 'error');
+      }
+    });
+
+    // LOAD RIWAYAT
+    async function loadRiwayat() {
+      const q = query(collection(db, "kasir_transaksi"), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+      let html = '';
+      querySnapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        const tgl = d.createdAt ? new Date(d.createdAt.toDate()).toLocaleString() : '-';
+        html += `
+          <tr>
+            <td>${tgl}</td>
+            <td><code>${docSnap.id}</code></td>
+            <td>Rp ${d.total.toLocaleString()}</td>
+            <td>Rp ${d.bayar.toLocaleString()}</td>
+            <td>${d.user}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('riwayat-body').innerHTML = html;
+    }
+
+    // LOAD DASHBOARD
+    async function loadDashboard() {
+      const querySnapshot = await getDocs(collection(db, "kasir_transaksi"));
+      let totalOmset = 0;
+      let totalLaba = 0;
+      let countTrans = 0;
+
+      querySnapshot.forEach((docSnap) => {
+        const d = docSnap.data();
+        totalOmset += d.total;
+        countTrans++;
+        if(d.items) {
+          d.items.forEach(item => {
+            const labaPerItem = (item.hargaJual - item.hargaBeli) * item.qty;
+            totalLaba += labaPerItem;
+          });
+        }
+      });
+
+      document.getElementById('dash-omset').innerText = `Rp ${totalOmset.toLocaleString()}`;
+      document.getElementById('dash-laba').innerText = `Rp ${totalLaba.toLocaleString()}`;
+      document.getElementById('dash-transaksi').innerText = countTrans;
+    }
+  </script>
+</body>
+</html>
