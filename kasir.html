@@ -265,20 +265,20 @@
 
     // AUTHENTICATION STATE
     onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
-        document.getElementById('login-page').style.display = 'none';
-        document.getElementById('main-page').style.display = 'block';
-        document.getElementById('user-display-name').innerText = user.email;
-        loadMasterBarang();
-        loadDashboard();
-      } else {
-        currentUser = null;
-        document.getElementById('login-page').style.display = 'flex';
-        document.getElementById('main-page').style.display = 'none';
-      }
-    });
-
+  if (user) {
+    currentUser = user;
+    document.getElementById('login-page').style.display = 'none';
+    document.getElementById('main-page').style.display = 'block';
+    document.getElementById('user-display-name').innerText = user.email;
+    
+    // Buka tab kasir/dashboard secara eksplisit
+    switchTab('kasir');
+  } else {
+    currentUser = null;
+    document.getElementById('login-page').style.display = 'flex';
+    document.getElementById('main-page').style.display = 'none';
+  }
+});
     // Login
     document.getElementById('form-login').addEventListener('submit', async (e) => {
       e.preventDefault();
