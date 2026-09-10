@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kasir Pro - POS & Analytics System</title>
+  <title>KasirPro - POS & Advanced Analytics</title>
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
@@ -11,10 +12,10 @@
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body class="bg-slate-100 font-sans text-slate-800">
+<body class="bg-slate-100 font-sans text-slate-800 antialiased">
 
   <!-- TOP NAVBAR -->
-  <nav class="bg-slate-900 text-white px-6 py-3 flex justify-between items-center shadow-lg sticky top-0 z-50">
+  <nav class="bg-slate-900 text-white px-6 py-3 flex justify-between items-center shadow-lg sticky top-0 z-40">
     <div class="flex items-center space-x-3">
       <i class="fa-solid fa-store text-indigo-400 text-2xl"></i>
       <h1 class="font-bold text-xl tracking-wide">Kasir<span class="text-indigo-400">Pro</span></h1>
@@ -26,7 +27,6 @@
       <button id="btnNavProduk" onclick="switchTab('produk')" class="px-4 py-2 rounded-md font-medium text-sm transition text-slate-300 hover:text-white">
         <i class="fa-solid fa-boxes-stacked mr-2"></i>Kelola Barang
       </button>
-
       <button id="btnNavAnalitik" onclick="switchTab('analitik')" class="px-4 py-2 rounded-md font-medium text-sm transition text-slate-300 hover:text-white">
         <i class="fa-solid fa-chart-line mr-2"></i>Analisis & Laporan
       </button>
@@ -42,11 +42,11 @@
       <div class="lg:col-span-2 space-y-4">
         <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex justify-between items-center">
           <h2 class="font-bold text-lg text-slate-700">Katalog Produk</h2>
-          <input type="text" id="posSearch" onkeyup="renderPosCatalog()" placeholder="Cari nama barang..." class="w-64 px-3 py-1.5 border rounded-lg text-sm focus:outline-indigo-500">
+          <input type="text" id="posSearch" onkeyup="renderPosCatalog()" placeholder="Cari nama barang..." class="w-64 px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
         
         <div id="posGrid" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-          <!-- Item produk akan di-render di sini -->
+          <!-- Item produk di-render di sini -->
         </div>
       </div>
 
@@ -57,12 +57,18 @@
             <span>Keranjang</span>
             <button onclick="clearCart()" class="text-xs text-red-500 hover:underline">Kosongkan</button>
           </h2>
-          <div id="cartItems" class="mt-3 space-y-3 overflow-y-auto max-h-[320px] pr-1">
+          
+          <div class="mt-3 space-y-2">
+            <label class="block text-xs font-semibold text-slate-500 uppercase">Nama Pelanggan (Opsional)</label>
+            <input type="text" id="inputCustomerName" placeholder="Umum / Non-Member" class="w-full px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div id="cartItems" class="mt-3 space-y-3 overflow-y-auto max-h-[260px] pr-1">
             <p class="text-slate-400 text-center text-sm py-8">Keranjang masih kosong</p>
           </div>
         </div>
 
-        <div class="border-t border-slate-100 pt-4 space-y-3">
+        <div class="border-t border-slate-100 pt-3 space-y-3">
           <div class="flex justify-between text-slate-600 text-sm">
             <span>Total Item</span>
             <span id="cartTotalItems" class="font-semibold">0</span>
@@ -72,9 +78,9 @@
             <span id="cartGrandTotal" class="text-indigo-600">Rp 0</span>
           </div>
 
-          <div class="space-y-2 pt-2">
+          <div class="space-y-1">
             <label class="block text-xs font-semibold text-slate-500 uppercase">Uang Pembayaran</label>
-            <input type="number" id="inputBayar" oninput="calculateKembalian()" placeholder="0" class="w-full px-3 py-2 border rounded-lg text-lg font-bold text-slate-800 focus:outline-indigo-500">
+            <input type="number" id="inputBayar" oninput="calculateKembalian()" placeholder="0" class="w-full px-3 py-2 border rounded-lg text-lg font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
 
           <div class="flex justify-between text-slate-700 font-semibold text-sm">
@@ -98,25 +104,25 @@
           <input type="hidden" id="editProdukId">
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nama Produk</label>
-            <input type="text" id="prodNama" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-indigo-500">
+            <input type="text" id="prodNama" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Kategori</label>
-            <input type="text" id="prodKategori" placeholder="Makanan, Minuman, dll" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-indigo-500">
+            <input type="text" id="prodKategori" placeholder="Makanan, Minuman, dll" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Harga Beli</label>
-              <input type="number" id="prodHargaBeli" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-indigo-500">
+              <input type="number" id="prodHargaBeli" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Harga Jual</label>
-              <input type="number" id="prodHargaJual" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-indigo-500">
+              <input type="number" id="prodHargaJual" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
             </div>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Stok Awal</label>
-            <input type="number" id="prodStok" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-indigo-500">
+            <input type="number" id="prodStok" required class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <div class="flex space-x-2 pt-2">
             <button type="submit" class="flex-1 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg text-sm transition">Simpan Barang</button>
@@ -150,63 +156,121 @@
 
     <!-- ================= TAB 3: ANALITIK & LAPORAN ================= -->
     <section id="tabAnalitik" class="hidden space-y-6">
-      <!-- KPI Metric Cards -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-indigo-50 text-indigo-600 rounded-lg text-xl"><i class="fa-solid fa-wallet"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Total Omset Penjualan</p>
-            <h3 id="kpiOmset" class="text-xl font-bold text-slate-800">Rp 0</h3>
+      
+      <!-- GLOBAL FILTER BAR -->
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-4 justify-between items-center">
+        <div class="flex flex-wrap items-center gap-3">
+          <span class="font-semibold text-slate-700 text-sm"><i class="fa-solid fa-filter mr-1"></i> Filter Date:</span>
+          <select id="filterRangePreset" onchange="handlePresetChange()" class="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="today">Hari Ini</option>
+            <option value="7days">7 Hari Terakhir</option>
+            <option value="thisMonth" selected>Bulan Ini</option>
+            <option value="custom">Kustom Tanggal</option>
+          </select>
+          
+          <div id="customDateContainer" class="hidden flex items-center space-x-2">
+            <input type="date" id="filterStartDate" class="px-2 py-1 border rounded text-xs">
+            <span class="text-slate-400">-</span>
+            <input type="date" id="filterEndDate" class="px-2 py-1 border rounded text-xs">
           </div>
+
+          <button onclick="updateAnalytics()" class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-semibold transition">
+            Terapkan Filter
+          </button>
         </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg text-xl"><i class="fa-solid fa-chart-pie"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Estimasi Laba Bersih</p>
-            <h3 id="kpiLaba" class="text-xl font-bold text-emerald-600">Rp 0</h3>
-          </div>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-blue-50 text-blue-600 rounded-lg text-xl"><i class="fa-solid fa-receipt"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Jumlah Transaksi</p>
-            <h3 id="kpiTotalTransaksi" class="text-xl font-bold text-slate-800">0</h3>
-          </div>
-        </div>
-        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-4">
-          <div class="p-3 bg-amber-50 text-amber-600 rounded-lg text-xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <div>
-            <p class="text-xs text-slate-500 font-medium">Stok Menipis (&le; 5)</p>
-            <h3 id="kpiStokTipis" class="text-xl font-bold text-amber-600">0 Items</h3>
-          </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="exportData('csv')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold transition flex items-center">
+            <i class="fa-solid fa-file-csv mr-2"></i>Export CSV
+          </button>
+          <button onclick="exportData('pdf')" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold transition flex items-center">
+            <i class="fa-solid fa-file-pdf mr-2"></i>Export PDF
+          </button>
         </div>
       </div>
 
-      <!-- Chart Penjualan & Top Selling -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h2 class="font-bold text-slate-700 mb-4">Trend Omset Penjualan Harian</h2>
-          <canvas id="salesChart" height="120"></canvas>
+      <!-- KPI METRIC CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Total Omset</p>
+          <h3 id="kpiOmset" class="text-lg font-bold text-slate-800 mt-1">Rp 0</h3>
         </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Laba Bersih</p>
+          <h3 id="kpiLaba" class="text-lg font-bold text-emerald-600 mt-1">Rp 0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Jumlah Transaksi</p>
+          <h3 id="kpiTotalTransaksi" class="text-lg font-bold text-slate-800 mt-1">0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Rata-rata Order (AOV)</p>
+          <h3 id="kpiAOV" class="text-lg font-bold text-indigo-600 mt-1">Rp 0</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Produk Terjual</p>
+          <h3 id="kpiTotalQty" class="text-lg font-bold text-slate-800 mt-1">0 Pcs</h3>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-xs text-slate-500 font-medium">Stok Menipis (&le; 5)</p>
+          <h3 id="kpiStokTipis" class="text-lg font-bold text-amber-600 mt-1">0 Items</h3>
+        </div>
+      </div>
+
+      <!-- VISUALIZATION CHARTS -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Tren Penjualan Harian -->
         <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-          <h2 class="font-bold text-slate-700 mb-4">Produk Terlaris (Top Selling)</h2>
-          <div id="topProductsList" class="space-y-3">
-            <!-- List top products -->
+          <h2 class="font-bold text-slate-700 mb-4">Tren Omset Penjualan</h2>
+          <canvas id="salesChart" height="150"></canvas>
+        </div>
+        <!-- Produk Terlaris -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h2 class="font-bold text-slate-700 mb-4">Top 5 Produk Terlaris (Qty)</h2>
+          <canvas id="topProductsChart" height="150"></canvas>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Analisis Jam Puncak -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h2 class="font-bold text-slate-700 mb-4">Jam Puncak Transaksi (Peak Hours)</h2>
+          <canvas id="peakHoursChart" height="120"></canvas>
+        </div>
+        <!-- Pelanggan Setia -->
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <h2 class="font-bold text-slate-700 mb-4">Pelanggan Teratas</h2>
+          <div id="topCustomersList" class="space-y-3 max-h-[220px] overflow-y-auto">
+            <!-- List Pelanggan -->
           </div>
         </div>
       </div>
 
-      <!-- Laporan Riwayat Transaksi -->
-      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-        <h2 class="font-bold text-slate-700 mb-4">Riwayat Transaksi Terbaru</h2>
+      <!-- DATATABLE RIWAYAT TRANSAKSI -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-wrap justify-between items-center gap-4">
+          <h2 class="font-bold text-slate-700">Riwayat Transaksi</h2>
+          
+          <div class="flex items-center space-x-3">
+            <input type="text" id="dtSearch" onkeyup="handleDtSearch()" placeholder="Cari Faktur / Pelanggan..." class="px-3 py-1.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64">
+            
+            <select id="dtPageSize" onchange="handleDtPageSizeChange()" class="px-2 py-1.5 border rounded-lg text-sm focus:outline-none">
+              <option value="5">5 / baris</option>
+              <option value="10" selected>10 / baris</option>
+              <option value="25">25 / baris</option>
+            </select>
+          </div>
+        </div>
+
         <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm">
+          <table class="w-full text-left border-collapse text-sm">
             <thead>
               <tr class="bg-slate-50 border-b text-slate-500 uppercase text-xs">
                 <th class="p-3">ID Faktur</th>
                 <th class="p-3">Waktu</th>
-                <th class="p-3">Detail Item</th>
+                <th class="p-3">Pelanggan</th>
                 <th class="p-3">Total Bayar</th>
+                <th class="p-3 text-center">Aksi</th>
               </tr>
             </thead>
             <tbody id="tableRiwayatBody">
@@ -214,19 +278,70 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Pagination Controls -->
+        <div class="flex justify-between items-center border-t border-slate-100 pt-3 text-sm">
+          <span id="dtInfoText" class="text-slate-500 text-xs">Showing 0 to 0 of 0 entries</span>
+          <div class="flex space-x-1">
+            <button id="dtBtnPrev" onclick="changeDtPage(-1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-xs font-semibold">Prev</button>
+            <button id="dtBtnNext" onclick="changeDtPage(1)" class="px-3 py-1 bg-slate-100 rounded hover:bg-slate-200 text-xs font-semibold">Next</button>
+          </div>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- FIREBASE LOGIC ENGINE -->
+  <!-- MODAL DETAIL TRANSAKSI -->
+  <div id="modalDetail" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex justify-center items-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4">
+      <div class="flex justify-between items-center border-b pb-3">
+        <h3 class="font-bold text-lg text-slate-800" id="modalFakturTitle">Detail Transaksi</h3>
+        <button onclick="closeModalDetail()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+      </div>
+      <div class="text-xs space-y-1 text-slate-600">
+        <p>Waktu: <span id="modalWaktu" class="font-semibold text-slate-800"></span></p>
+        <p>Pelanggan: <span id="modalPelanggan" class="font-semibold text-slate-800"></span></p>
+      </div>
+      <div class="border rounded-lg overflow-hidden">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 border-b">
+            <tr>
+              <th class="p-2">Item</th>
+              <th class="p-2 text-center">Qty</th>
+              <th class="p-2 text-right">Harga</th>
+              <th class="p-2 text-right">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody id="modalItemsBody"></tbody>
+        </table>
+      </div>
+      <div class="space-y-1 text-xs border-t pt-2">
+        <div class="flex justify-between font-bold text-sm text-slate-800">
+          <span>Total:</span>
+          <span id="modalTotalBayar"></span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>Bayar:</span>
+          <span id="modalNominalBayar"></span>
+        </div>
+        <div class="flex justify-between text-slate-600">
+          <span>Kembalian:</span>
+          <span id="modalKembalian"></span>
+        </div>
+      </div>
+      <button onclick="closeModalDetail()" class="w-full py-2 bg-slate-800 text-white text-xs font-semibold rounded-lg hover:bg-slate-900 transition">Tutup</button>
+    </div>
+  </div>
+
+  <!-- FIREBASE ENGINE & APPLICATION LOGIC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc, onSnapshot, query, orderBy 
+      getFirestore, collection, addDoc, doc, updateDoc, deleteDoc, onSnapshot, query 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // Konfigurasi Firebase Anda
+    // Konfigurasi Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCIEJHWd7EBzC0FeWgtlmNF0CHpPcyCrK4",
       authDomain: "forminput-9c324.firebaseapp.com",
@@ -236,7 +351,6 @@
       appId: "1:105974451173:web:d2976fc5ed60dad0d23d0c"
     };
 
-    // Inisialisasi Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -244,49 +358,53 @@
     let productsList = [];
     let salesList = [];
     let cart = [];
-    let chartInstance = null;
+
+    // Datatable Pagination & Filter State
+    let filteredSales = [];
+    let dtCurrentPage = 1;
+    let dtPageSize = 10;
+
+    // Chart Instances
+    let salesChartInst = null;
+    let topProdChartInst = null;
+    let peakHoursChartInst = null;
 
     // Format Rupiah Helper
     const formatRp = (num) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(num);
 
-    // Initial Data Fetching (Real-Time Listeners)
     window.addEventListener('DOMContentLoaded', () => {
       listenProducts();
       listenSales();
+      setDefaultPreset('thisMonth');
     });
 
-    // 1. LISTEN PRODUK DATA
+    // --- REALTIME LISTENERS ---
     function listenProducts() {
       const q = query(collection(db, "kasir_produk"));
       onSnapshot(q, (snapshot) => {
         productsList = [];
-        snapshot.forEach((doc) => {
-          productsList.push({ id: doc.id, ...doc.data() });
-        });
+        snapshot.forEach((doc) => productsList.push({ id: doc.id, ...doc.data() }));
         renderPosCatalog();
         renderProdukTable();
         updateAnalytics();
       });
     }
 
-    // 2. LISTEN PENJUALAN DATA
     function listenSales() {
       const q = query(collection(db, "kasir_penjualan"));
       onSnapshot(q, (snapshot) => {
         salesList = [];
-        snapshot.forEach((doc) => {
-          salesList.push({ id: doc.id, ...doc.data() });
-        });
+        snapshot.forEach((doc) => salesList.push({ id: doc.id, ...doc.data() }));
         updateAnalytics();
       });
     }
 
-    // --- TAB SWITCHING LOGIC ---
+    // --- NAVIGATION LOGIC ---
     window.switchTab = (tabName) => {
       document.getElementById('tabPos').classList.add('hidden');
       document.getElementById('tabProduk').classList.add('hidden');
       document.getElementById('tabAnalitik').classList.add('hidden');
-      
+
       document.getElementById('btnNavPos').className = "px-4 py-2 rounded-md font-medium text-sm transition text-slate-300 hover:text-white";
       document.getElementById('btnNavProduk').className = "px-4 py-2 rounded-md font-medium text-sm transition text-slate-300 hover:text-white";
       document.getElementById('btnNavAnalitik').className = "px-4 py-2 rounded-md font-medium text-sm transition text-slate-300 hover:text-white";
@@ -300,11 +418,11 @@
       } else if(tabName === 'analitik') {
         document.getElementById('tabAnalitik').classList.remove('hidden');
         document.getElementById('btnNavAnalitik').className = "px-4 py-2 rounded-md font-medium text-sm transition bg-indigo-600 text-white";
-        renderAnalyticsChart();
+        updateAnalytics();
       }
     };
 
-    // --- POS TERMINAL LOGIC ---
+    // --- POS LOGIC ---
     window.renderPosCatalog = () => {
       const posGrid = document.getElementById('posGrid');
       const search = document.getElementById('posSearch').value.toLowerCase();
@@ -402,7 +520,6 @@
       document.getElementById('textKembalian').innerText = formatRp(kembalian > 0 ? kembalian : 0);
     };
 
-    // PROCESS CHECKOUT (FIREBASE BATCH TRANSAKSI)
     window.processCheckout = async () => {
       if(cart.length === 0) return alert("Keranjang kosong!");
       const grandTotal = cart.reduce((sum, item) => sum + (item.harga_jual * item.qty), 0);
@@ -410,11 +527,13 @@
 
       if(bayar < grandTotal) return alert("Nominal pembayaran kurang!");
 
+      const custName = document.getElementById('inputCustomerName').value.trim() || 'Umum';
+
       try {
-        // 1. Simpan Transaksi ke `kasir_penjualan`
         const faktur = 'INV-' + Date.now();
         await addDoc(collection(db, "kasir_penjualan"), {
           nomor_faktur: faktur,
+          nama_pelanggan: custName,
           items: cart,
           total_bayar: grandTotal,
           nominal_bayar: bayar,
@@ -422,7 +541,6 @@
           waktu_transaksi: new Date()
         });
 
-        // 2. Potong Stok di `kasir_produk`
         for(let item of cart) {
           const pRef = doc(db, "kasir_produk", item.id);
           const currentProd = productsList.find(p => p.id === item.id);
@@ -431,11 +549,11 @@
           }
         }
 
-        alert(`Transaksi Berhasil! Nomor Faktur: ${faktur}`);
+        alert(`Transaksi Berhasil! Faktur: ${faktur}`);
         clearCart();
         document.getElementById('inputBayar').value = '';
+        document.getElementById('inputCustomerName').value = '';
       } catch (err) {
-        console.error(err);
         alert("Gagal memproses transaksi!");
       }
     };
@@ -509,85 +627,127 @@
       }
     };
 
-    // --- ANALYTICS LOGIC ---
-    function updateAnalytics() {
-      // 1. Calculate KPI Metrics
+    // --- FILTER & ANALYTICS ENGINE ---
+    function setDefaultPreset(preset) {
+      const today = new Date();
+      if(preset === 'today') {
+        const str = today.toISOString().split('T')[0];
+        document.getElementById('filterStartDate').value = str;
+        document.getElementById('filterEndDate').value = str;
+      } else if(preset === '7days') {
+        const start = new Date();
+        start.setDate(today.getDate() - 7);
+        document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
+        document.getElementById('filterEndDate').value = today.toISOString().split('T')[0];
+      } else if(preset === 'thisMonth') {
+        const start = new Date(today.getFullYear(), today.getMonth(), 1);
+        document.getElementById('filterStartDate').value = start.toISOString().split('T')[0];
+        document.getElementById('filterEndDate').value = today.toISOString().split('T')[0];
+      }
+    }
+
+    window.handlePresetChange = () => {
+      const val = document.getElementById('filterRangePreset').value;
+      const customContainer = document.getElementById('customDateContainer');
+      if(val === 'custom') {
+        customContainer.classList.remove('hidden');
+      } else {
+        customContainer.classList.add('hidden');
+        setDefaultPreset(val);
+        updateAnalytics();
+      }
+    };
+
+    function getFilteredSales() {
+      const startVal = document.getElementById('filterStartDate').value;
+      const endVal = document.getElementById('filterEndDate').value;
+
+      if(!startVal || !endVal) return salesList;
+
+      const startDate = new Date(startVal + "T00:00:00");
+      const endDate = new Date(endVal + "T23:59:59");
+
+      return salesList.filter(s => {
+        if(!s.waktu_transaksi) return false;
+        const dt = new Date(s.waktu_transaksi.seconds * 1000);
+        return dt >= startDate && dt <= endDate;
+      });
+    }
+
+    window.updateAnalytics = () => {
+      filteredSales = getFilteredSales();
+
+      // 1. KPI Calculation
       let totalOmset = 0;
       let totalLaba = 0;
-      salesList.forEach(s => {
-        totalOmset += s.total_bayar;
+      let totalQty = 0;
+      const customerMap = {};
+      const productQtyMap = {};
+      const peakHoursMap = Array(24).fill(0);
+      const salesByDate = {};
+
+      filteredSales.forEach(s => {
+        totalOmset += s.total_bayar || 0;
+        
+        // Customer tracking
+        const custName = s.nama_pelanggan || 'Umum';
+        customerMap[custName] = (customerMap[custName] || 0) + (s.total_bayar || 0);
+
+        // Date & Peak hours calculation
+        if(s.waktu_transaksi) {
+          const dateObj = new Date(s.waktu_transaksi.seconds * 1000);
+          const dateKey = dateObj.toLocaleDateString('id-ID');
+          salesByDate[dateKey] = (salesByDate[dateKey] || 0) + (s.total_bayar || 0);
+          
+          const hour = dateObj.getHours();
+          peakHoursMap[hour] = (peakHoursMap[hour] || 0) + 1;
+        }
+
+        // Items iteration
         if(s.items) {
           s.items.forEach(item => {
             const hBeli = item.harga_beli || 0;
             totalLaba += (item.harga_jual - hBeli) * item.qty;
+            totalQty += item.qty;
+
+            productQtyMap[item.nama_produk] = (productQtyMap[item.nama_produk] || 0) + item.qty;
           });
         }
       });
 
+      const totalTx = filteredSales.length;
+      const aov = totalTx > 0 ? totalOmset / totalTx : 0;
+
+      // Update KPI DOM
       document.getElementById('kpiOmset').innerText = formatRp(totalOmset);
       document.getElementById('kpiLaba').innerText = formatRp(totalLaba);
-      document.getElementById('kpiTotalTransaksi').innerText = salesList.length;
+      document.getElementById('kpiTotalTransaksi').innerText = totalTx;
+      document.getElementById('kpiAOV').innerText = formatRp(aov);
+      document.getElementById('kpiTotalQty').innerText = `${totalQty} Pcs`;
       document.getElementById('kpiStokTipis').innerText = `${productsList.filter(p => p.stok <= 5).length} Items`;
 
-      // 2. Render Riwayat
-      const tbodyRiwayat = document.getElementById('tableRiwayatBody');
-      tbodyRiwayat.innerHTML = '';
-      salesList.slice(-5).reverse().forEach(s => {
-        const dateStr = s.waktu_transaksi ? new Date(s.waktu_transaksi.seconds * 1000).toLocaleString('id-ID') : '-';
-        const itemList = s.items ? s.items.map(i => `${i.nama_produk} (${i.qty})`).join(', ') : '-';
-        const tr = document.createElement('tr');
-        tr.className = "border-b text-xs";
-        tr.innerHTML = `
-          <td class="p-3 font-bold text-slate-700">${s.nomor_faktur}</td>
-          <td class="p-3 text-slate-500">${dateStr}</td>
-          <td class="p-3 text-slate-600">${itemList}</td>
-          <td class="p-3 font-bold text-indigo-600">${formatRp(s.total_bayar)}</td>
-        `;
-        tbodyRiwayat.appendChild(tr);
-      });
+      // Render Charts & Tables
+      renderSalesChart(salesByDate);
+      renderTopProductsChart(productQtyMap);
+      renderPeakHoursChart(peakHoursMap);
+      renderTopCustomers(customerMap);
 
-      // 3. Top Selling Products
-      const productSalesMap = {};
-      salesList.forEach(s => {
-        if(s.items) {
-          s.items.forEach(i => {
-            productSalesMap[i.nama_produk] = (productSalesMap[i.nama_produk] || 0) + i.qty;
-          });
-        }
-      });
+      // Reset Datatable Page and Render
+      dtCurrentPage = 1;
+      renderDatatable();
+    };
 
-      const topProductsList = document.getElementById('topProductsList');
-      topProductsList.innerHTML = '';
-      Object.entries(productSalesMap).sort((a,b) => b[1] - a[1]).slice(0, 5).forEach(([nama, totalQty]) => {
-        const itemHtml = `
-          <div class="flex justify-between items-center text-sm border-b border-slate-100 pb-2">
-            <span class="font-medium text-slate-700">${nama}</span>
-            <span class="px-2 py-0.5 bg-indigo-50 text-indigo-600 font-bold rounded text-xs">${totalQty} Terjual</span>
-          </div>
-        `;
-        topProductsList.innerHTML += itemHtml;
-      });
-    }
-
-    function renderAnalyticsChart() {
+    // --- CHARTS RENDERING ---
+    function renderSalesChart(salesByDate) {
       const ctx = document.getElementById('salesChart').getContext('2d');
-      if(chartInstance) chartInstance.destroy();
+      if(salesChartInst) salesChartInst.destroy();
 
-      // Aggregate Omset Harian
-      const salesByDate = {};
-      salesList.forEach(s => {
-        if(s.waktu_transaksi) {
-          const dateKey = new Date(s.waktu_transaksi.seconds * 1000).toLocaleDateString('id-ID');
-          salesByDate[dateKey] = (salesByDate[dateKey] || 0) + s.total_bayar;
-        }
-      });
-
-      chartInstance = new Chart(ctx, {
+      salesChartInst = new Chart(ctx, {
         type: 'line',
         data: {
           labels: Object.keys(salesByDate),
           datasets: [{
-            label: 'Omset Penjualan (Rp)',
+            label: 'Omset (Rp)',
             data: Object.values(salesByDate),
             borderColor: '#4f46e5',
             backgroundColor: 'rgba(79, 70, 229, 0.1)',
@@ -595,13 +755,182 @@
             tension: 0.3
           }]
         },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true } }
-        }
+        options: { responsive: true, plugins: { legend: { display: false } } }
       });
     }
+
+    function renderTopProductsChart(productQtyMap) {
+      const ctx = document.getElementById('topProductsChart').getContext('2d');
+      if(topProdChartInst) topProdChartInst.destroy();
+
+      const sorted = Object.entries(productQtyMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+
+      topProdChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sorted.map(i => i[0]),
+          datasets: [{
+            label: 'Terjual (Qty)',
+            data: sorted.map(i => i[1]),
+            backgroundColor: '#10b981'
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderPeakHoursChart(peakHoursMap) {
+      const ctx = document.getElementById('peakHoursChart').getContext('2d');
+      if(peakHoursChartInst) peakHoursChartInst.destroy();
+
+      const labels = Array.from({length: 24}, (_, i) => `${String(i).padStart(2, '0')}:00`);
+
+      peakHoursChartInst = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Frekuensi Transaksi',
+            data: peakHoursMap,
+            backgroundColor: '#f59e0b'
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function renderTopCustomers(customerMap) {
+      const container = document.getElementById('topCustomersList');
+      container.innerHTML = '';
+
+      const sorted = Object.entries(customerMap).sort((a,b) => b[1] - a[1]).slice(0, 5);
+      if(sorted.length === 0) {
+        container.innerHTML = '<p class="text-xs text-slate-400">Belum ada data pelanggan</p>';
+        return;
+      }
+
+      sorted.forEach(([name, total]) => {
+        const div = document.createElement('div');
+        div.className = "flex justify-between items-center text-xs border-b border-slate-100 pb-2";
+        div.innerHTML = `
+          <span class="font-semibold text-slate-700">${name}</span>
+          <span class="font-bold text-indigo-600">${formatRp(total)}</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // --- CLIENT-SIDE DATATABLE ENGINE ---
+    function getSearchedSales() {
+      const query = document.getElementById('dtSearch').value.toLowerCase();
+      return filteredSales.filter(s => 
+        (s.nomor_faktur && s.nomor_faktur.toLowerCase().includes(query)) ||
+        (s.nama_pelanggan && s.nama_pelanggan.toLowerCase().includes(query))
+      );
+    }
+
+    function renderDatatable() {
+      const searched = getSearchedSales();
+      const totalEntries = searched.length;
+
+      const startIndex = (dtCurrentPage - 1) * dtPageSize;
+      const endIndex = Math.min(startIndex + dtPageSize, totalEntries);
+      const pageData = searched.slice(startIndex, endIndex);
+
+      const tbody = document.getElementById('tableRiwayatBody');
+      tbody.innerHTML = '';
+
+      if(pageData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-400 text-xs">Tidak ada data transaksi</td></tr>';
+      } else {
+        pageData.forEach(s => {
+          const dateStr = s.waktu_transaksi ? new Date(s.waktu_transaksi.seconds * 1000).toLocaleString('id-ID') : '-';
+          const tr = document.createElement('tr');
+          tr.className = "border-b hover:bg-slate-50 text-xs";
+          tr.innerHTML = `
+            <td class="p-3 font-bold text-slate-700">${s.nomor_faktur}</td>
+            <td class="p-3 text-slate-500">${dateStr}</td>
+            <td class="p-3 font-medium text-slate-800">${s.nama_pelanggan || 'Umum'}</td>
+            <td class="p-3 font-bold text-indigo-600">${formatRp(s.total_bayar)}</td>
+            <td class="p-3 text-center">
+              <button onclick="openModalDetail('${s.id}')" class="px-2 py-1 bg-indigo-50 text-indigo-600 font-semibold rounded hover:bg-indigo-100 transition">Detail</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Pagination Info Text
+      document.getElementById('dtInfoText').innerText = `Showing ${totalEntries > 0 ? startIndex + 1 : 0} to ${endIndex} of ${totalEntries} entries`;
+      document.getElementById('dtBtnPrev').disabled = dtCurrentPage === 1;
+      document.getElementById('dtBtnNext').disabled = endIndex >= totalEntries;
+    }
+
+    window.handleDtSearch = () => { dtCurrentPage = 1; renderDatatable(); };
+    window.handleDtPageSizeChange = () => { 
+      dtPageSize = parseInt(document.getElementById('dtPageSize').value); 
+      dtCurrentPage = 1; 
+      renderDatatable(); 
+    };
+    window.changeDtPage = (delta) => { dtCurrentPage += delta; renderDatatable(); };
+
+    // --- MODAL DETAIL LOGIC ---
+    window.openModalDetail = (salesId) => {
+      const s = salesList.find(i => i.id === salesId);
+      if(!s) return;
+
+      document.getElementById('modalFakturTitle').innerText = s.nomor_faktur;
+      document.getElementById('modalWaktu').innerText = s.waktu_transaksi ? new Date(s.waktu_transaksi.seconds * 1000).toLocaleString('id-ID') : '-';
+      document.getElementById('modalPelanggan').innerText = s.nama_pelanggan || 'Umum';
+
+      const tbody = document.getElementById('modalItemsBody');
+      tbody.innerHTML = '';
+      if(s.items) {
+        s.items.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.className = "border-b";
+          tr.innerHTML = `
+            <td class="p-2 text-slate-800 font-medium">${item.nama_produk}</td>
+            <td class="p-2 text-center text-slate-600">${item.qty}</td>
+            <td class="p-2 text-right text-slate-600">${formatRp(item.harga_jual)}</td>
+            <td class="p-2 text-right font-semibold text-slate-800">${formatRp(item.harga_jual * item.qty)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('modalTotalBayar').innerText = formatRp(s.total_bayar);
+      document.getElementById('modalNominalBayar').innerText = formatRp(s.nominal_bayar || 0);
+      document.getElementById('modalKembalian').innerText = formatRp(s.kembalian || 0);
+
+      document.getElementById('modalDetail').classList.remove('hidden');
+    };
+
+    window.closeModalDetail = () => {
+      document.getElementById('modalDetail').classList.add('hidden');
+    };
+
+    // --- EXPORT LOGIC ---
+    window.exportData = (type) => {
+      if(filteredSales.length === 0) return alert("Tidak ada data untuk diexport!");
+
+      if(type === 'csv') {
+        let csv = 'ID Faktur,Waktu,Pelanggan,Total Bayar\n';
+        filteredSales.forEach(s => {
+          const dateStr = s.waktu_transaksi ? new Date(s.waktu_transaksi.seconds * 1000).toISOString() : '';
+          csv += `"${s.nomor_faktur}","${dateStr}","${s.nama_pelanggan || 'Umum'}",${s.total_bayar}\n`;
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Laporan_Penjualan_${Date.now()}.csv`;
+        a.click();
+      } else if(type === 'pdf') {
+        window.print(); // Simple PDF Export via Browser Print View
+      }
+    };
   </script>
 </body>
 </html>
